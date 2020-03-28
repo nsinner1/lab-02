@@ -1,46 +1,63 @@
-'use strict'
+'use strict';
 
+const keywords = [];
 
-const newInfo = [];
-const keywordID = [];
-
-function NewInfo2(url, title, description, keyword, horn) {
-  this.url = url;
-  this.title = title;
-  this.description = description;
-  this.keyword = keyword;
-  this.horn = horn;
-  newInfo.push(this);
+function Arcade(object) {
+  this.url = object.image_url;
+  this.title = object.title;
+  this.description = object.description;
+  this.keyword = object.keyword;
+  this.horns = object.horns;
 }
 
-NewInfo2.prototype.render = function () {
-  let $newInfo2Clone = $('.photo-template').clone();
-  $('main').append($newInfo2Clone);
-  $newInfo2Clone.find('h2').text(this.title);
-  $newInfo2Clone.find('img').attr('src',this.url);
-  $newInfo2Clone.find('p').text(this.description);
-  $newInfo2Clone.removeClass('photo-template');
-  $newInfo2Clone.attr('class', this.keyword);
+Arcade.prototype.render = function () {
+  let $arcadeClone = $('.photo-template').clone();
+  $arcadeClone.find('h2').text(this.title);
+  $arcadeClone.find('img').attr('src', this.url);
+  $arcadeClone.find('img').attr('alt', this.title);
+  $arcadeClone.find('p').text(this.description);
+  $arcadeClone.removeClass('photo-template');
+  $arcadeClone.attr('class', this.keyword);
+  $('main').append($arcadeClone);
 };
 
-$(document).ready(function() {
-  $.ajax('data/page-1.json')
-    .then(data => {
-      data.forEach((obj, idx) => {
-        let newInfo2 = new NewInfo2(obj.image_url, obj.title, obj.description, obj.keyword, obj.horn);
-        newInfo2.render();
-        dropDown();
-      });
-    });
-});
-
-function dropDown() {
-  newInfo.forEach(animal => {
-    if (!keywordID.includes(animal.keyword)) {
-      keywordID.push(animal.keyword);
-    }
-  });
+function displayImages() {
+  let $selected = $(this).val();
+  if ($selected === 'default') {
+    $('section').fadeIn();
+    $('.photo-template').hide();
+  } else {
+    $('section').hide();
+    $('.' + $selected).fadeIn();
+  }
 }
 
+function appendToDropDown(keyword) {
+  if (!keywords.includes(keyword)) {
+    keywords.push(keyword);
+  }
+}
 
+function appendToKeywordsArr() {
+  keywords.sort();
+  for (let i = 0; i < keywords.length; i++) {
+    $('select').append(`<option value="${keywords[i]}">${keywords[i]}</option>`);
+  }
+}
 
+function getArcade() {
+  $.ajax('./data/page-1.json')
+    .then(data => {
+      data.forEach((object, idx) => {
+        let arcade = new Arcade(object);
+        arcade.render();    
+        appendToDropDown(object.keyword);
+      })
+      appendToKeywordsArr();
+    });
+}
+
+$(document).ready(function() {
+  $('select').on('change', displayImages);
+  getArcade();  
+});
